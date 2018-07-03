@@ -1,0 +1,12 @@
+<ng-container *ngIf="pokemon">
+  <a class="remove" href="#" (click)="remove()">X</a>
+  <div class="pc">{{pokemon.cp ? pokemon.cp : '?'}}</div>
+  <div class="image">
+    <span></span>
+    <img *ngIf="pokemon.image" [src]="pokemon.image" alt="">
+  </div>
+  <div class="name">{{pokemon.renamed?pokemon.renamed:pokemon.name}}</div>
+  <div>
+    {{pokemon.minIv}} -> {{pokemon.maxIv}}
+  </div>
+</ng-container>

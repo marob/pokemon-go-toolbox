@@ -1,0 +1,28 @@
+<h1>
+  {{ 'PAGES.HOME.DEVICES' | translate }}
+</h1>
+
+<ul>
+  <li *ngFor="let device of devices">
+    {{device}}
+  </li>
+</ul>
+
+<button *ngIf="!evalInProgress" (click)="startPokemonsEval()">Start Pokemon evaluation</button>
+<button *ngIf="evalInProgress" (click)="stopPokemonsEval()">Stop Pokemon evaluation</button>
+
+
+<button (click)="takeScreenshot()">Take screenshot</button>
+
+<div style="display: flex;flex-wrap:wrap;width:400px;float:left">
+  <app-pokemon
+    *ngFor="let pokemon of pokemons ; let i = index"
+    [pokemon]="pokemon"
+    (onRemove)="pokemons.splice(i, 1)"
+  ></app-pokemon>
+</div>
+
+<img style="width: 360px;" *ngIf="screenshot" [src]="screenshot" />
+<pre *ngIf="ocr">
+  {{ocr.text}}
+</pre>

@@ -1,0 +1,56 @@
+:host {
+  text-align: center;
+  display: table-cell;
+  font-weight: bold;
+  flex: 0 0 33%;
+  margin-bottom: 2em;
+  position: relative;
+}
+
+.remove {
+  position: absolute;
+  top: 0;
+  right: 1em;
+  display: none;
+  color: red;
+  text-decoration: none;
+  font-family: sans-serif;
+}
+
+:host:hover .remove {
+  display: block;
+}
+
+.pc {
+  color: #44696c;
+  font-size: 1.3em;
+}
+
+.pc:before {
+  content: 'PC ';
+  color: #98acac;
+  font-size: 0.6em;
+  font-family: sans-serif;
+  vertical-align: 10%;
+}
+
+.image {
+  background: radial-gradient(37.5px, rgba(211, 243, 249, 1), rgba(211, 243, 249, 0.7) 60%, rgba(255, 255, 255, 0));
+  height: 75px;
+
+  span {
+    height: 100%;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  img {
+    max-width: 60px;
+    max-height: 75px;
+    vertical-align: middle;
+  }
+}
+
+.name {
+  color: #466b6e;
+}
