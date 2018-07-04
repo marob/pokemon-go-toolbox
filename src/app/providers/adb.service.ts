@@ -8,7 +8,7 @@ import * as https from 'https';
 import * as unzip from 'unzip-stream/unzip';
 import {SpawnSyncOptions, SpawnSyncReturns} from 'child_process';
 
-const Jimp = window.require('Jimp');
+const Jimp = window.require('jimp');
 
 const node = {
   childProcess: window.require('child_process') as typeof childProcess,
@@ -20,7 +20,7 @@ const node = {
 
 @Injectable()
 export class AdbService {
-  private platformToolsPath = node.path.resolve('platform-tools');
+  platformToolsPath = node.path.resolve('platform-tools');
   private waitIfPosedPromise: Promise<void>;
   private screenSizeCache: ScreenSize;
 
@@ -72,7 +72,12 @@ export class AdbService {
         (res: IncomingMessage) => {
           res
             .pipe(node.unzip.Extract({path: '.'}))
-            .on('close', () => resolve());
+            .on('close', () => {
+              if (platform !== 'windows') {
+                node.fs.chmodSync('./platform-tools/adb', 0o744);
+              }
+              resolve();
+            });
         }
       );
     });

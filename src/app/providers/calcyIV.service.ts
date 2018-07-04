@@ -28,7 +28,9 @@ export default class CalcyIVService {
       .then((result) => {
         const {stdout} = result;
         const calcyIvPid = Number.parseInt(stdout);
-        const child = node.childProcess.spawn('./platform-tools/adb', ['logcat', '-v raw', ' -T 1', `--pid=${calcyIvPid}`], {
+        const child = node.childProcess.spawn('adb', ['logcat', '-v raw', ' -T 1', `--pid=${calcyIvPid}`], {
+          cwd: this.adbService.platformToolsPath,
+          detached: true,
           stdio: [
             0, // Use parent's stdin for child
             'pipe', // Pipe child's stdout to parent
