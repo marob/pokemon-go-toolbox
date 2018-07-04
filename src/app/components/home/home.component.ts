@@ -53,7 +53,7 @@ export class HomeComponent implements OnInit {
     this.detectedPokemons = this.calcyIVService.logs$
       .pipe(
         filter(log => log.includes('Received values:')),
-        map(log => {
+        map((log: string) => {
           const regexMath = /Received values: Id: ([^,]*), CP: ([^,]*), Max HP: ([^,]*), Dust cost: ([^,]*), Level: ([^,]*), FastMove ([^,]*), SpecialMove ([^,]*), Gender ([^,]*)/.exec(log);
           if (regexMath) {
             const [, idString, cp, hp, dust, level, fastMove, specialMove, gender] = regexMath;
@@ -273,5 +273,5 @@ export class HomeComponent implements OnInit {
         this.screenshot = src;
       });
     });
-}
+  }
 }
