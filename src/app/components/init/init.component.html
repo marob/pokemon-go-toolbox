@@ -1,0 +1,8 @@
+<div *ngIf="!ready" class="main-div">
+  <mat-card class="center">
+    {{ 'INIT.INSTALL' | translate }}
+    <mat-spinner></mat-spinner>
+  </mat-card>
+</div>
+
+<router-outlet *ngIf="ready"></router-outlet>

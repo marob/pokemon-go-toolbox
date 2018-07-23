@@ -1,7 +1,8 @@
 {
-  "PAGES": {
-      "HOME": {
-          "DEVICES": "Devices"
-      }
+  "INIT": {
+    "INSTALL": "Installing..."
+  },
+  "DEVICES": {
+    "TITLE": "Devices"
   }
 }

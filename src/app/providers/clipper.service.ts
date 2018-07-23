@@ -19,17 +19,17 @@ export default class ClipperService {
 
   public async install() {
     console.log(`Installing ${this.apkPath} to device...`);
-    const result = await this.adbService.install(this.apkPath);
+    const result = await this.adbService.installApp(this.apkPath);
     console.log(`${this.apkPath} installed!`);
     return result;
   }
 
   public async uninstall() {
-    return await this.adbService.uninstall(PACKAGE_NAME);
+    return await this.adbService.uninstallApp(PACKAGE_NAME);
   }
 
   public async isInstalled(): Promise<boolean> {
-    return await this.adbService.isInstalled(PACKAGE_NAME);
+    return await this.adbService.appIsInstalled(PACKAGE_NAME);
   }
 
   public async start() {

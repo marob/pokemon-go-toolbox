@@ -1,0 +1,9 @@
+<h1>
+  {{ 'DEVICES.TITLE' | translate }}
+</h1>
+
+<ul>
+  <li *ngFor="let device of devices">
+    {{device.id}}
+  </li>
+</ul>

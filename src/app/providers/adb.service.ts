@@ -47,13 +47,14 @@ export class AdbService {
   constructor() {
   }
 
-  public async init() {
-    if (!node.fs.existsSync(this.platformToolsPath)) {
-      console.log('Downloading platform tools (first launch only)...');
-      await this.downloadPlatformTools();
-      console.log(`Platform tools downloaded in ${this.platformToolsPath}`);
-    }
-    await this.startServer();
+  public isInstalled() {
+    return node.fs.existsSync(this.platformToolsPath);
+  }
+
+  public async install() {
+    console.log('Downloading platform tools (first launch only)...');
+    await this.downloadPlatformTools();
+    console.log(`Platform tools downloaded in ${this.platformToolsPath}`);
   }
 
   private async downloadPlatformTools() {
@@ -83,7 +84,7 @@ export class AdbService {
     });
   }
 
-  private async startServer() {
+  public async startServer() {
     console.log('Starting adb server...');
     await this.exec$('adb start-server');
     console.log('adb server started');
@@ -202,15 +203,15 @@ export class AdbService {
     return await this.keyevent(4);
   }
 
-  public async install(apkPath: string) {
+  public async installApp(apkPath: string) {
     return await this.exec$(`adb install ${apkPath}`);
   }
 
-  public async uninstall(packageName: string) {
+  public async uninstallApp(packageName: string) {
     return await this.exec$(`adb uninstall ${packageName}`);
   }
 
-  public async isInstalled(packageName: string): Promise<boolean> {
+  public async appIsInstalled(packageName: string): Promise<boolean> {
     const {stdout} = await this.shell(`cmd package list packages ${packageName}`);
     return stdout.includes(packageName);
   }

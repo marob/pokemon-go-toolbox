@@ -1,28 +1,40 @@
-<h1>
-  {{ 'PAGES.HOME.DEVICES' | translate }}
-</h1>
+<div class="menu">
+  <button mat-raised-button
+          color="primary"
+          *ngIf="!evalInProgress"
+          (click)="startPokemonsEval()"
+  >
+    Start Pokemon evaluation
+  </button>
+  <button mat-raised-button
+          *ngIf="evalInProgress"
+          (click)="stopPokemonsEval()"
+  >
+    Stop Pokemon evaluation
+  </button>
 
-<ul>
-  <li *ngFor="let device of devices">
-    {{device}}
-  </li>
-</ul>
+  <mat-form-field>
+    <mat-label>Min IV</mat-label>
+    <input matInput
+           [(ngModel)]="minIv"
+           type="number"
+    />
+  </mat-form-field>
 
-<button *ngIf="!evalInProgress" (click)="startPokemonsEval()">Start Pokemon evaluation</button>
-<button *ngIf="evalInProgress" (click)="stopPokemonsEval()">Stop Pokemon evaluation</button>
+  <!--<button mat-raised-button (click)="takeScreenshot()">Take screenshot</button>-->
 
-
-<button (click)="takeScreenshot()">Take screenshot</button>
-
-<div style="display: flex;flex-wrap:wrap;width:400px;float:left">
+  <!--<button mat-raised-button (click)="test()">Test</button>-->
+</div>
+<div class="pokemonList">
   <app-pokemon
     *ngFor="let pokemon of pokemons ; let i = index"
     [pokemon]="pokemon"
     (onRemove)="pokemons.splice(i, 1)"
+    [ngClass]="{'badPokemon': pokemon.maxIv < minIv, 'goodPokemon': pokemon.maxIv >= minIv}"
   ></app-pokemon>
 </div>
 
-<img style="width: 360px;" *ngIf="screenshot" [src]="screenshot" />
-<pre *ngIf="ocr">
-  {{ocr.text}}
-</pre>
+<!--<img style="width: 360px;" *ngIf="screenshot" [src]="screenshot"/>-->
+<!--<pre *ngIf="ocr">-->
+<!--{{ocr.text}}-->
+<!--</pre>-->

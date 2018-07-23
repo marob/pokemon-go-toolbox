@@ -1,6 +1,5 @@
 :host {
   text-align: center;
-  display: table-cell;
   font-weight: bold;
   flex: 0 0 33%;
   margin-bottom: 2em;
@@ -35,8 +34,8 @@
 }
 
 .image {
-  background: radial-gradient(37.5px, rgba(211, 243, 249, 1), rgba(211, 243, 249, 0.7) 60%, rgba(255, 255, 255, 0));
-  height: 75px;
+  //background: radial-gradient(37.5px, rgba(211, 243, 249, 1), rgba(211, 243, 249, 0.7) 60%, rgba(255, 255, 255, 0));
+  height: 60px;
 
   span {
     height: 100%;
@@ -46,7 +45,7 @@
 
   img {
     max-width: 60px;
-    max-height: 75px;
+    max-height: 60px;
     vertical-align: middle;
   }
 }

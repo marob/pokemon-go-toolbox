@@ -6,3 +6,35 @@ h1 {
 ul {
   margin: 0;
 }
+
+app-pokemon.badPokemon {
+  // background-color: rgba(255, 0, 0, 0.1);
+}
+
+app-pokemon.goodPokemon {
+  background-color: rgba(0, 255, 0, 0.1);
+}
+
+:host {
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  position: absolute;
+  height: 100%;
+  //align-items: flex-start;
+}
+
+.menu {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.pokemonList {
+  display: flex;
+  flex-wrap: wrap;
+  width: 400px;
+
+  flex: 0 1 auto;
+  overflow-y: auto;
+}

@@ -1,8 +1,11 @@
 import {Iv} from './iv';
-import {cpm, pokemonData} from './data';
+import {cpm} from './cpm';
+import {pokemonData} from './pokemonData';
 
 export class Pokemon {
   pokedexId: number;
+  pid: number;
+  formId: number;
   name: string;
   renamed: string;
   weight: number;
@@ -11,20 +14,20 @@ export class Pokemon {
   hp: number;
   dust: number;
   level: number;
+
   fastMove: string;
   specialMove: string;
   gender: number;
-
-  possibleIVs: Iv[] = [];
+  possibleIVs: Iv[];
 
   get image() {
-    return this.pokedexId
-      ? `assets/img/pokemon/${this.pokedexId.toString().padStart(3, '0')}.png`
+    return this.pid
+      ? `assets/img/pokemon/${this.pid.toString().padStart(3, '0')}.png`
       : undefined;
   }
 
   get isCorrectlyDetected() {
-    return this.pokedexId !== -1
+    return this.formId !== -1
       && this.cp !== -1
       && this.hp !== -1
       && this.dust !== -1
@@ -32,17 +35,17 @@ export class Pokemon {
   }
 
   get minIv() {
-    if (!this.possibleIVs.length) {
+    if (!this.possibleIVs) {
       this.computeIv();
     }
-    return Math.min(...this.possibleIVs.map(iv => iv.iv));
+    return this.possibleIVs ? Math.min(...this.possibleIVs.map(iv => iv.iv)) : null;
   }
 
   get maxIv() {
-    if (!this.possibleIVs.length) {
+    if (!this.possibleIVs) {
       this.computeIv();
     }
-    return Math.max(...this.possibleIVs.map(iv => iv.iv));
+    return this.possibleIVs ? Math.max(...this.possibleIVs.map(iv => iv.iv)) : null;
   }
 
   get imc() {
@@ -62,19 +65,24 @@ export class Pokemon {
 
     const ECpM = cpm[this.level - 1];
 
-    const {BHP, BATK, BDEF} = pokemonData[this.pokedexId - 1];
+    // const data = pokemonData[this.pokedexId - 1];
+    const data = pokemonData[this.pid];
+    this.possibleIVs = [];
+    if (data) {
+      const {stamina, attack, defense} = data;
 
-    for (let hp = minHP; hp <= maxHP; hp++) {
-      let thp = Math.floor(ECpM * (BHP + hp));
-      thp = thp < 10 ? 10 : thp;
-      if (thp === this.hp) {
-        for (let atk = minATK; atk <= maxATK; atk++) {
-          for (let def = minDEF; def <= maxDEF; def++) {
-            let cp = Math.floor((BATK + atk) * Math.pow(BDEF + def, 0.5) * Math.pow(BHP + hp, 0.5) * Math.pow(ECpM, 2) / 10);
-            cp = cp < 10 ? 10 : cp;
-            if (cp === this.cp) {
-              const possibleIV = new Iv(hp, atk, def);
-              this.possibleIVs.push(possibleIV);
+      for (let hp = minHP; hp <= maxHP; hp++) {
+        let thp = Math.floor(ECpM * (stamina + hp));
+        thp = thp < 10 ? 10 : thp;
+        if (thp === this.hp) {
+          for (let atk = minATK; atk <= maxATK; atk++) {
+            for (let def = minDEF; def <= maxDEF; def++) {
+              let cp = Math.floor((attack + atk) * Math.pow(defense + def, 0.5) * Math.pow(stamina + hp, 0.5) * Math.pow(ECpM, 2) / 10);
+              cp = cp < 10 ? 10 : cp;
+              if (cp === this.cp) {
+                const possibleIV = new Iv(hp, atk, def);
+                this.possibleIVs.push(possibleIV);
+              }
             }
           }
         }

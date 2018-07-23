@@ -26,8 +26,12 @@ export default class CalcyIVService {
   private streamCalcyIvLogs() {
     this.adbService.shell(`pidof ${this.APP_NAME}`)
       .then((result) => {
-        const {stdout} = result;
+        const {stdout, stderr} = result;
+        if (stderr) {
+          console.error(stderr);
+        }
         const calcyIvPid = Number.parseInt(stdout);
+        console.log(`CalcyIV pid: ${calcyIvPid}`);
         const child = node.childProcess.spawn('adb', ['logcat', '-v raw', ' -T 1', `--pid=${calcyIvPid}`], {
           cwd: this.adbService.platformToolsPath,
           detached: true,
@@ -210,5 +214,10 @@ export default class CalcyIVService {
         return acc;
       }, [])
       ;
+  }
+
+  async analyzeScreen() {
+    console.log(`Analyze screen with CalcyIV`);
+    await this.adbService.shell(`am broadcast -a ${this.APP_NAME}.ACTION_ANALYZE_SCREEN -n ${this.APP_NAME}/.IntentReceiver`);
   }
 }

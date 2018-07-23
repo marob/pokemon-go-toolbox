@@ -5,12 +5,11 @@ import {BrowserModule} from '@angular/platform-browser';
 import {NgModule} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 
-import {HttpClientModule, HttpClient} from '@angular/common/http';
+import {HttpClient, HttpClientModule} from '@angular/common/http';
 
 import {AppRoutingModule} from './app-routing.module';
-
 // NG Translate
-import {TranslateModule, TranslateLoader} from '@ngx-translate/core';
+import {TranslateLoader, TranslateModule} from '@ngx-translate/core';
 import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 
 import {AppComponent} from './app.component';
@@ -20,6 +19,11 @@ import {AdbService} from './providers/adb.service';
 import ClipperService from './providers/clipper.service';
 import CalcyIVService from './providers/calcyIV.service';
 import PogoService from './providers/pogo.service';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule} from '@angular/material';
+import {InitComponent} from './components/init/init.component';
+import {DevicesComponent} from './components/devices/devices.component';
+import {DevicesService} from './providers/devices.service';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -30,10 +34,13 @@ export function HttpLoaderFactory(http: HttpClient) {
   declarations: [
     AppComponent,
     HomeComponent,
-    PokemonComponent
+    PokemonComponent,
+    InitComponent,
+    DevicesComponent
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     FormsModule,
     HttpClientModule,
     AppRoutingModule,
@@ -43,9 +50,14 @@ export function HttpLoaderFactory(http: HttpClient) {
         useFactory: (HttpLoaderFactory),
         deps: [HttpClient]
       }
-    })
+    }),
+    MatButtonModule,
+    MatCardModule,
+    MatProgressSpinnerModule,
+    MatInputModule,
+    MatFormFieldModule
   ],
-  providers: [AdbService, ClipperService, CalcyIVService, PogoService],
+  providers: [AdbService, ClipperService, CalcyIVService, PogoService, DevicesService],
   bootstrap: [AppComponent]
 })
 export class AppModule {
