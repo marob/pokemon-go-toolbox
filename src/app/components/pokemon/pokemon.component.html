@@ -1,5 +1,5 @@
-<ng-container *ngIf="pokemon">
-  <a class="remove" href="#" (click)="remove()">X</a>
+<button mat-button *ngIf="pokemon" (click)="doShow()">
+  <!--<a class="remove" href="#" (click)="doRemove()">X</a>-->
   <div class="pc">{{pokemon.cp ? pokemon.cp : '?'}}</div>
   <div class="image">
     <span></span>
@@ -9,4 +9,4 @@
   <div>
     {{pokemon.minIv}} -> {{pokemon.maxIv}}
   </div>
-</ng-container>
+</button>

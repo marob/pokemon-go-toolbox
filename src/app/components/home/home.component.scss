@@ -21,7 +21,7 @@ app-pokemon.goodPokemon {
   overflow: hidden;
   position: absolute;
   height: 100%;
-  //align-items: flex-start;
+  width: 100%;
 }
 
 .menu {
@@ -32,9 +32,9 @@ app-pokemon.goodPokemon {
 
 .pokemonList {
   display: flex;
-  flex-wrap: wrap;
-  width: 400px;
-
   flex: 0 1 auto;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  width: 450px;
   overflow-y: auto;
 }

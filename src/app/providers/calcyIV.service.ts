@@ -5,7 +5,8 @@ import {Injectable} from '@angular/core';
 import {AdbService} from './adb.service';
 import ClipperService from './clipper.service';
 import * as childProcess from 'child_process';
-import {Subject} from 'rxjs';
+import {Observable, Subject} from 'rxjs';
+import {ChildProcess} from 'child_process';
 
 const node = {
   childProcess: window.require('child_process') as typeof childProcess
@@ -15,47 +16,62 @@ const node = {
 export default class CalcyIVService {
   private APP_NAME = 'tesmath.calcy';
 
-  private logsSubject = new Subject<String>();
-  public logs$ = this.logsSubject.asObservable();
+  // private logsSubject = new Subject<String>();
+  // public logs$ = this.logsSubject.asObservable();
 
   constructor(private adbService: AdbService,
               private clipperService: ClipperService) {
-    this.streamCalcyIvLogs();
+    // this.streamCalcyIvLogs();
   }
 
-  private streamCalcyIvLogs() {
-    this.adbService.shell(`pidof ${this.APP_NAME}`)
-      .then((result) => {
-        const {stdout, stderr} = result;
-        if (stderr) {
-          console.error(stderr);
-        }
-        const calcyIvPid = Number.parseInt(stdout);
-        console.log(`CalcyIV pid: ${calcyIvPid}`);
-        const child = node.childProcess.spawn('adb', ['logcat', '-v raw', ' -T 1', `--pid=${calcyIvPid}`], {
-          cwd: this.adbService.platformToolsPath,
-          detached: true,
-          stdio: [
-            0, // Use parent's stdin for child
-            'pipe', // Pipe child's stdout to parent
-            0
-          ]
-        });
-        child.unref(); // and unref() somehow disentangles the child's event loop from the parent's:
-        child.stdout.on('data', (data) => {
-          data.toString()
-            .split('\n')
-            .forEach((line) => {
-              this.logsSubject.next(line);
+  public streamCalcyIvLogs(): Observable<String> {
+    return new Observable(subscriber => {
+      const childPromise = new Promise(resolve => {
+        // this.adbService.shell(`for p in /proc/[0-9]*; do [[ $(<$p/cmdline) = ${this.APP_NAME} ]] && echo \${p##*/}; done`)
+        this.adbService.shell(`pidof -s ${this.APP_NAME}`)
+          .then((result) => {
+            const {stdout, stderr} = result;
+            if (stderr) {
+              console.error(stderr);
+            }
+            const calcyIvPid = Number.parseInt(stdout);
+            console.log(`CalcyIV pid: ${calcyIvPid}`);
+            const child = node.childProcess.spawn(process.platform === 'linux' ? './adb' : 'adb', ['logcat', '-vraw', '-T1', `--pid=${calcyIvPid}`], {
+              cwd: this.adbService.platformToolsPath,
+              detached: true,
+              stdio: [
+                0, // Use parent's stdin for child
+                'pipe', // Pipe child's stdout to parent
+                0
+              ]
             });
-        });
-        child.stdout.on('close', (data) => {
-          console.log('close');
-        });
-        child.stdout.on('end', (data) => {
-          console.log('end');
-        });
+            child.unref(); // and unref() somehow disentangles the child's event loop from the parent's:
+
+            resolve(child);
+
+            child.stdout.on('data', (data) => {
+              data.toString()
+                .split('\n')
+                .forEach((line) => {
+                  subscriber.next(line);
+                  // this.logsSubject.next(line);
+                });
+            });
+            child.stdout.on('close', (data) => {
+              console.log('close');
+            });
+            child.stdout.on('end', (data) => {
+              console.log('end');
+            });
+          });
       });
+
+      return () => {
+        childPromise.then((child: ChildProcess) => {
+          child.kill();
+        });
+      };
+    });
   }
 
   public async startIfNotRunning() {
@@ -218,6 +234,8 @@ export default class CalcyIVService {
 
   async analyzeScreen() {
     console.log(`Analyze screen with CalcyIV`);
-    await this.adbService.shell(`am broadcast -a ${this.APP_NAME}.ACTION_ANALYZE_SCREEN -n ${this.APP_NAME}/.IntentReceiver`);
+    await this.adbService.shell(
+      `am broadcast -a ${this.APP_NAME}.ACTION_ANALYZE_SCREEN -n ${this.APP_NAME}/.IntentReceiver --ez silentMode true`
+    );
   }
 }

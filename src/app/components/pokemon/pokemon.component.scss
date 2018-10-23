@@ -6,6 +6,16 @@
   position: relative;
 }
 
+button {
+  display: block;
+  width: 100%;
+}
+
+.mat-button {
+  line-height: normal;
+  padding: 0;
+}
+
 .remove {
   position: absolute;
   top: 0;

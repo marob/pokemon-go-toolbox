@@ -20,10 +20,18 @@ import ClipperService from './providers/clipper.service';
 import CalcyIVService from './providers/calcyIV.service';
 import PogoService from './providers/pogo.service';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule} from '@angular/material';
+import {
+  MatButtonModule,
+  MatCardModule,
+  MatFormFieldModule,
+  MatInputModule,
+  MatProgressSpinnerModule, MatSortModule,
+  MatTableModule
+} from '@angular/material';
 import {InitComponent} from './components/init/init.component';
 import {DevicesComponent} from './components/devices/devices.component';
 import {DevicesService} from './providers/devices.service';
+import { PokemonDetailComponent } from './components/pokemon-detail/pokemon-detail.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {
@@ -36,7 +44,8 @@ export function HttpLoaderFactory(http: HttpClient) {
     HomeComponent,
     PokemonComponent,
     InitComponent,
-    DevicesComponent
+    DevicesComponent,
+    PokemonDetailComponent
   ],
   imports: [
     BrowserModule,
@@ -55,7 +64,9 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatCardModule,
     MatProgressSpinnerModule,
     MatInputModule,
-    MatFormFieldModule
+    MatFormFieldModule,
+    MatTableModule,
+    MatSortModule
   ],
   providers: [AdbService, ClipperService, CalcyIVService, PogoService, DevicesService],
   bootstrap: [AppComponent]

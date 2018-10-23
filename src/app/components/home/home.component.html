@@ -29,10 +29,13 @@
   <app-pokemon
     *ngFor="let pokemon of pokemons ; let i = index"
     [pokemon]="pokemon"
-    (onRemove)="pokemons.splice(i, 1)"
+    (remove)="pokemons.splice(i, 1)"
+    (show)="selectedPokemon=pokemon"
     [ngClass]="{'badPokemon': pokemon.maxIv < minIv, 'goodPokemon': pokemon.maxIv >= minIv}"
   ></app-pokemon>
 </div>
+
+<app-pokemon-detail [pokemon]="selectedPokemon"></app-pokemon-detail>
 
 <!--<img style="width: 360px;" *ngIf="screenshot" [src]="screenshot"/>-->
 <!--<pre *ngIf="ocr">-->

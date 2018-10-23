@@ -1,0 +1,41 @@
+<ng-container *ngIf="_pokemon">
+  PC {{_pokemon.cp}}
+  <img [src]="_pokemon.image"/>
+
+  <div class="iv">
+    IV:
+    {{_pokemon.minIv}}
+    <ng-container *ngIf="_pokemon.maxIv != _pokemon.minIv">
+      -> {{_pokemon.maxIv}}
+    </ng-container>
+
+    <div class="possibleIvs">
+      <table class="mat-elevation-z8"
+             mat-table matSort
+             [dataSource]="dataSource">
+        <ng-container matColumnDef="atk">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Attack</th>
+          <td mat-cell *matCellDef="let possibleIv">{{possibleIv.atk}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="def">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Defense</th>
+          <td mat-cell *matCellDef="let possibleIv">{{possibleIv.def}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="hp">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> HP</th>
+          <td mat-cell *matCellDef="let possibleIv">{{possibleIv.hp}}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="iv">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> IV</th>
+          <td mat-cell *matCellDef="let possibleIv">{{possibleIv.iv}} %</td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </div>
+  </div>
+</ng-container>

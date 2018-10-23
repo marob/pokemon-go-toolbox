@@ -34,7 +34,7 @@ export class HomeComponent implements OnInit {
   public pokemons: Pokemon[] = [];
   public screenshot: string;
   private calcyIVButton: Button;
-  private pokemonDetailScreen: any;
+  private pokemonDetailScreen: PokemonDetailScreen;
   public evalInProgress: boolean;
   // private tesseract: Tesseract.TesseractStatic;
   private detectedPokemons: Observable<Pokemon>;
@@ -84,7 +84,7 @@ export class HomeComponent implements OnInit {
     //   langPath: 'https://cdn.rawgit.com/naptha/tessdata/gh-pages/3.02/',
     // });
 
-    this.detectedPokemons = this.calcyIVService.logs$
+    this.detectedPokemons = this.calcyIVService.streamCalcyIvLogs()
       .pipe(
         filter(log => log.includes('Received values:')),
         map((log: string) => {
@@ -98,8 +98,10 @@ export class HomeComponent implements OnInit {
             pokemon.name = pokemonName;
             pokemon.pokedexId = Number.parseInt(pokedexId);
 
-            const foundPokemon = this.findPokemon(pokemon.pokedexId, pokemonName);
-            pokemon.pid = foundPokemon.pid;
+            if (pokemon.pokedexId > 0) {
+              const foundPokemon = this.findPokemon(pokemon.pokedexId, pokemonName);
+              pokemon.pid = foundPokemon.pid;
+            }
 
             pokemon.cp = Number.parseInt(cp);
             pokemon.hp = Number.parseInt(hp);
@@ -169,14 +171,27 @@ export class HomeComponent implements OnInit {
       const subscription = this.detectedPokemons
         .subscribe(async p => {
           if (p.isCorrectlyDetected) {
-            p.renamed = await this.clipperService.get();
+            this.clipperService.get().then(name => {
+              this.zone.run(async () => {
+                p.renamed = name;
+              });
+            });
 
             this.zone.run(async () => {
               console.log(p);
               this.pokemons.push(p);
             });
+
+            if (p.maxIv >= this.minIv) {
+              await this.adbService.tap(this.pokemonDetailScreen.renameButton.coordinates);
+              await this.adbService.paste();
+              await this.pogoService.hideKeyboard();
+              await this.pogoService.clickOkOnRenameDialog();
+              await TimeUtils.wait(600);
+            }
+
             await this.pogoService.nextPokemon();
-            await TimeUtils.wait(500);
+            await TimeUtils.wait(300);
           }
           if (this.evalInProgress) {
             await this.calcyIVService.analyzeScreen();

@@ -11,9 +11,16 @@ export class PokemonComponent {
   pokemon: Pokemon;
 
   @Output()
-  onRemove = new EventEmitter();
+  remove = new EventEmitter();
 
-  remove() {
-    this.onRemove.next();
+  @Output()
+  show = new EventEmitter();
+
+  doRemove() {
+    this.remove.next();
+  }
+
+  doShow() {
+    this.show.next();
   }
 }

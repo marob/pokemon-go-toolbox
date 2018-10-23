@@ -26,6 +26,9 @@ export class AdbService {
 
   private exec$ = (command, options?): Promise<{ stdout: string, stderr: string }> => {
     return new Promise<{ stdout: string, stderr: string }>((resolve, reject) => {
+      if(process.platform === 'linux') {
+        command = `./${command}`;
+      }
       node.childProcess.exec(command,
         {
           cwd: this.platformToolsPath,
@@ -107,7 +110,7 @@ export class AdbService {
   public async rawScreenshot(): Promise<Buffer> {
     const spawnSync: (command, args?, options?) => SpawnSyncReturns<Buffer> =
       (command, args?, options?) => node.childProcess.spawnSync(
-        command,
+        process.platform === 'linux' ? `./${command}` : command,
         args,
         {cwd: this.platformToolsPath, ...options} as SpawnSyncOptions
       );

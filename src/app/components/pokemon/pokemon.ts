@@ -48,7 +48,7 @@ export class Pokemon {
     return this.possibleIVs ? Math.max(...this.possibleIVs.map(iv => iv.iv)) : null;
   }
 
-  get imc() {
+  get imc(): number {
     return this.weight / (this.size * this.size);
   }
 
