@@ -1,4 +1,3 @@
-import 'zone.js/dist/zone-mix';
 import 'reflect-metadata';
 import '../polyfills';
 import {BrowserModule} from '@angular/platform-browser';
@@ -25,13 +24,14 @@ import {
   MatCardModule,
   MatFormFieldModule,
   MatInputModule,
-  MatProgressSpinnerModule, MatSortModule,
+  MatProgressSpinnerModule,
+  MatSortModule,
   MatTableModule
 } from '@angular/material';
 import {InitComponent} from './components/init/init.component';
 import {DevicesComponent} from './components/devices/devices.component';
 import {DevicesService} from './providers/devices.service';
-import { PokemonDetailComponent } from './components/pokemon-detail/pokemon-detail.component';
+import {PokemonDetailComponent} from './components/pokemon-detail/pokemon-detail.component';
 
 // AoT requires an exported function for factories
 export function HttpLoaderFactory(http: HttpClient) {

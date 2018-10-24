@@ -5,8 +5,8 @@ import {Injectable} from '@angular/core';
 import {AdbService} from './adb.service';
 import ClipperService from './clipper.service';
 import * as childProcess from 'child_process';
-import {Observable, Subject} from 'rxjs';
 import {ChildProcess} from 'child_process';
+import {Observable} from 'rxjs';
 
 const node = {
   childProcess: window.require('child_process') as typeof childProcess

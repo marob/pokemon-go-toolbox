@@ -3,10 +3,10 @@ import {Injectable} from '@angular/core';
 import ScreenSize from '../dto/screenSize';
 import * as path from 'path';
 import * as childProcess from 'child_process';
+import {SpawnSyncOptions, SpawnSyncReturns} from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as unzip from 'unzip-stream/unzip';
-import {SpawnSyncOptions, SpawnSyncReturns} from 'child_process';
 
 const Jimp = window.require('jimp');
 
@@ -26,7 +26,7 @@ export class AdbService {
 
   private exec$ = (command, options?): Promise<{ stdout: string, stderr: string }> => {
     return new Promise<{ stdout: string, stderr: string }>((resolve, reject) => {
-      if(process.platform === 'linux') {
+      if (process.platform === 'linux') {
         command = `./${command}`;
       }
       node.childProcess.exec(command,
