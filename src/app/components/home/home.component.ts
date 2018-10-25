@@ -105,6 +105,7 @@ export class HomeComponent implements OnInit {
     const pokemonForm = pokemonName
       .replace(/^[^ ]+/, '')
       .replace(/normale/i, '')
+      .replace(/alternative/i, '') // For Giratina
       .trim();
 
     if (pokemonForm) {
