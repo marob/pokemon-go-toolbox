@@ -10,8 +10,10 @@ import ImageUtils from '../utils/imageUtils';
 import {Injectable} from '@angular/core';
 import {AdbService} from './adb.service';
 
-@Injectable()
-export default class PogoService {
+@Injectable({
+  providedIn: 'root'
+})
+export class PogoService {
   constructor(private adbService: AdbService) {
   }
 

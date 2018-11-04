@@ -2,14 +2,14 @@ import {Component, NgZone, OnInit} from '@angular/core';
 import {Pokemon} from '../pokemon/pokemon';
 import TimeUtils from '../../utils/timeUtils';
 import {AdbService} from '../../providers/adb.service';
-import ClipperService from '../../providers/clipper.service';
-import CalcyIVService from '../../providers/calcyIV.service';
-import PogoService from '../../providers/pogo.service';
+import {ClipperService} from '../../providers/clipper.service';
+import {CalcyIVService} from '../../providers/calcyIV.service';
+import {PogoService} from '../../providers/pogo.service';
 import PokemonDetailScreen from '../../dto/screen/pokemonDetailScreen';
 import {filter, map} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 import {DevicesService} from '../../providers/devices.service';
-import {pokemonNames} from '../pokemon/pokemonNames';
+import {ReferenceDataService} from '../../providers/reference-data.service';
 
 interface PokemonName {
   pid: number;
@@ -26,11 +26,12 @@ export class HomeComponent implements OnInit {
   public pokemons: Pokemon[] = [];
   public screenshot: string;
   public evalInProgress: boolean;
+  public minIv = 90;
+  public selectedPokemon: Pokemon;
 
   private pokemonDetailScreen: PokemonDetailScreen;
   private detectedPokemons: Observable<Pokemon>;
 
-  private minIv = 90;
   private standardPokemonNames: PokemonName[];
   private specialPokemonNames: PokemonName[];
   private alola: { pid: number; name: string; locale: string; originalName: string; originalId: number }[];
@@ -41,11 +42,12 @@ export class HomeComponent implements OnInit {
               private calcyIVService: CalcyIVService,
               private clipperService: ClipperService,
               private pogoService: PogoService,
+              private referenceDataService: ReferenceDataService,
               private zone: NgZone) {
   }
 
   async ngOnInit() {
-    const names = pokemonNames.filter(p => p.locale === 'fr');
+    const names = this.referenceDataService.getPokemonNames().filter(p => p.locale === 'fr');
     this.standardPokemonNames = names.filter(p => p.pid < 10000);
     this.specialPokemonNames = names.filter(p => p.pid >= 10000);
 
@@ -76,7 +78,7 @@ export class HomeComponent implements OnInit {
             const [, idString, pokedexId, cp, hp, dust, level, fastMove, specialMove, gender] = regexMath;
             const [, id, pokemonName] = /(\d*) \(([^\)]*)\)/.exec(idString);
 
-            const pokemon = new Pokemon();
+            const pokemon = new Pokemon(this.referenceDataService);
             pokemon.formId = Number.parseInt(id);
             pokemon.name = pokemonName;
             pokemon.pokedexId = Number.parseInt(pokedexId);

@@ -1,3 +1,10 @@
+/*
+DEPRECATED: use the referenceDataService in the app instead!
+ */
+
+console.log('DEPRECATED: use the referenceDataService in the app instead!');
+process.exit();
+
 const https = require('https');
 const fs = require('fs');
 const path = require('path');

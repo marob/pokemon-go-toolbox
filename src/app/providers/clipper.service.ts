@@ -13,8 +13,10 @@ const node = {
   fs: window.require('fs') as typeof fs
 };
 
-@Injectable()
-export default class ClipperService {
+@Injectable({
+  providedIn: 'root'
+})
+export class ClipperService {
   private apkPath: string;
 
   constructor(private adbService: AdbService) {

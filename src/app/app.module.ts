@@ -14,10 +14,6 @@ import {TranslateHttpLoader} from '@ngx-translate/http-loader';
 import {AppComponent} from './app.component';
 import {HomeComponent} from './components/home/home.component';
 import {PokemonComponent} from './components/pokemon/pokemon.component';
-import {AdbService} from './providers/adb.service';
-import ClipperService from './providers/clipper.service';
-import CalcyIVService from './providers/calcyIV.service';
-import PogoService from './providers/pogo.service';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {
   MatButtonModule,
@@ -30,7 +26,6 @@ import {
 } from '@angular/material';
 import {InitComponent} from './components/init/init.component';
 import {DevicesComponent} from './components/devices/devices.component';
-import {DevicesService} from './providers/devices.service';
 import {PokemonDetailComponent} from './components/pokemon-detail/pokemon-detail.component';
 
 // AoT requires an exported function for factories
@@ -68,7 +63,7 @@ export function HttpLoaderFactory(http: HttpClient) {
     MatTableModule,
     MatSortModule
   ],
-  providers: [AdbService, ClipperService, CalcyIVService, PogoService, DevicesService],
+  providers: [],
   bootstrap: [AppComponent]
 })
 export class AppModule {

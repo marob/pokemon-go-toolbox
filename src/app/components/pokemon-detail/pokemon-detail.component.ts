@@ -8,7 +8,7 @@ import {MatSort, MatTableDataSource} from '@angular/material';
   styleUrls: ['./pokemon-detail.component.scss']
 })
 export class PokemonDetailComponent implements OnInit {
-  private _pokemon: Pokemon;
+  public _pokemon: Pokemon;
 
   @ViewChild(MatSort) sort: MatSort;
 

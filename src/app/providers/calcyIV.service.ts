@@ -3,7 +3,7 @@ import DumpSysWindow from '../dto/dumpSysWindow';
 import OutputStatus from '../dto/outputStatus';
 import {Injectable} from '@angular/core';
 import {AdbService} from './adb.service';
-import ClipperService from './clipper.service';
+import {ClipperService} from './clipper.service';
 import * as childProcess from 'child_process';
 import {ChildProcess} from 'child_process';
 import {Observable} from 'rxjs';
@@ -12,8 +12,10 @@ const node = {
   childProcess: window.require('child_process') as typeof childProcess
 };
 
-@Injectable()
-export default class CalcyIVService {
+@Injectable({
+  providedIn: 'root'
+})
+export class CalcyIVService {
   private APP_NAME = 'tesmath.calcy';
 
   // private logsSubject = new Subject<String>();

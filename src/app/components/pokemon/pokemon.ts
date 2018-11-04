@@ -1,6 +1,5 @@
 import {Iv} from './iv';
-import {cpm} from './cpm';
-import {pokemonData} from './pokemonData';
+import {ReferenceDataService} from '../../providers/reference-data.service';
 
 export class Pokemon {
   pokedexId: number;
@@ -19,6 +18,9 @@ export class Pokemon {
   specialMove: string;
   gender: number;
   possibleIVs: Iv[];
+
+  constructor(private referenceDataService: ReferenceDataService) {
+  }
 
   get image() {
     return this.pid
@@ -63,10 +65,10 @@ export class Pokemon {
     const maxHP = 15;
     const maxDEF = 15;
 
-    const ECpM = cpm[this.level - 1];
+    const ECpM = this.referenceDataService.getCPM()[this.level - 1];
 
     // const data = pokemonData[this.pokedexId - 1];
-    const data = pokemonData[this.pid];
+    const data = this.referenceDataService.getPokemonData()[this.pid];
     this.possibleIVs = [];
     if (data) {
       const {stamina, attack, defense} = data;

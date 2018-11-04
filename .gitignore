@@ -9,7 +9,6 @@ main.js
 
 # dependencies
 /node_modules
-/platform-tools
 clipper.apk
 
 # logs

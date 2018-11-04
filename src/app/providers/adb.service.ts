@@ -18,9 +18,16 @@ const node = {
   unzip: window.require('unzip-stream/unzip') as typeof unzip,
 };
 
-@Injectable()
+const USER_DATA_PATH = window.require('electron').remote.app.getPath('userData');
+
+@Injectable({
+  providedIn: 'root'
+})
 export class AdbService {
-  platformToolsPath = node.path.resolve('platform-tools');
+  platformToolsPath = node.path.resolve(node.path.join(
+    USER_DATA_PATH,
+    'platform-tools'
+  ));
   private waitIfPosedPromise: Promise<void>;
   private screenSizeCache: ScreenSize;
 
@@ -70,15 +77,15 @@ export class AdbService {
       if (!platform) {
         throw new Error('Unhandled platform!');
       }
-      node.fs.mkdirSync(this.platformToolsPath);
+      // node.fs.mkdirSync(this.platformToolsPath);
       node.https.get(
         `https://dl.google.com/android/repository/platform-tools_r28.0.0-${platform}.zip`,
         (res: IncomingMessage) => {
           res
-            .pipe(node.unzip.Extract({path: '.'}))
+            .pipe(node.unzip.Extract({path: USER_DATA_PATH}))
             .on('close', () => {
               if (platform !== 'windows') {
-                node.fs.chmodSync('./platform-tools/adb', 0o744);
+                node.fs.chmodSync(node.path.join(this.platformToolsPath, 'adb'), 0o744);
               }
               resolve();
             });
