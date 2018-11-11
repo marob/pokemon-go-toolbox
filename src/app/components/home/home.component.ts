@@ -6,7 +6,7 @@ import {ClipperService} from '../../providers/clipper.service';
 import {CalcyIVService} from '../../providers/calcyIV.service';
 import {PogoService} from '../../providers/pogo.service';
 import PokemonDetailScreen from '../../dto/screen/pokemonDetailScreen';
-import {filter, map} from 'rxjs/operators';
+import {map} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 import {DevicesService} from '../../providers/devices.service';
 import {ReferenceDataService} from '../../providers/reference-data.service';
@@ -16,6 +16,14 @@ interface PokemonName {
   name: string;
   locale: string;
 }
+
+class ScreenType {
+  type: 'monster' | 'appraisal';
+  lucky?: boolean;
+}
+
+const SCREEN_REGEXP = new RegExp('Detected (.*) screen');
+const POKEMON_INFO_REGEXP = new RegExp('Received values: Id: ([^,]*), Nr: ([^,]*), CP: ([^,]*), Max HP: ([^,]*), Dust cost: ([^,]*), Level: ([^,]*), FastMove ([^,]*), SpecialMove ([^,]*), Gender ([^,]*)');
 
 @Component({
   selector: 'app-home',
@@ -30,7 +38,7 @@ export class HomeComponent implements OnInit {
   public selectedPokemon: Pokemon;
 
   private pokemonDetailScreen: PokemonDetailScreen;
-  private detectedPokemons: Observable<Pokemon>;
+  private calcyLogEvents: Observable<Pokemon | ScreenType>;
 
   private standardPokemonNames: PokemonName[];
   private specialPokemonNames: PokemonName[];
@@ -69,10 +77,25 @@ export class HomeComponent implements OnInit {
     this.devicesService.devices
       .forEach(device => device.connected$.subscribe(status => console.log(`${device.id}: ${status}`)));
 
-    this.detectedPokemons = this.calcyIVService.streamCalcyIvLogs()
+    this.calcyLogEvents = this.calcyIVService.streamCalcyIvLogs()
       .pipe(
-        filter(log => log.includes('Received values:')),
         map((log: string) => {
+          const screenRegexpMatch = SCREEN_REGEXP.exec(log);
+          if (screenRegexpMatch) {
+            const [, screen] = screenRegexpMatch;
+            const screenType = new ScreenType();
+            if (screen === 'lucky monster') {
+              screenType.type = 'monster';
+              screenType.lucky = true;
+            } else if (screen === 'monster') {
+              screenType.type = 'monster';
+              screenType.lucky = false;
+            } else if (screen === 'appraisal') {
+              screenType.type = 'appraisal';
+            }
+            return screenType;
+          }
+
           const regexMath = /Received values: (.*)/.exec(log);
           if (regexMath) {
             const receivedValues: any = regexMath[1].split(',').map(v => v.trim()).reduce((acc, receivedValue) => {
@@ -106,8 +129,6 @@ export class HomeComponent implements OnInit {
             pokemon.catchYear = Number.parseInt(receivedValues.catchYear, 10);
             pokemon.levelUp = receivedValues.Levelup.toLowerCase() === 'true';
             return pokemon;
-          } else {
-            console.error(`Doesn't match regexp: `, log);
           }
         })
       );
@@ -145,35 +166,53 @@ export class HomeComponent implements OnInit {
       console.log('On the right screen. Evaluation will start!');
       this.pokemonDetailScreen = screen;
 
-      const subscription = this.detectedPokemons
-        .subscribe(async p => {
-          if (p.isCorrectlyDetected) {
-            this.clipperService.get().then(name => {
-              this.zone.run(async () => {
-                p.renamed = name;
-              });
-            });
+      let lucky;
 
-            this.zone.run(async () => {
-              console.log(p);
-              this.pokemons.push(p);
-            });
-
-            if (p.maxIv >= this.minIv) {
-              await this.adbService.tap(this.pokemonDetailScreen.renameButton.coordinates);
-              await this.adbService.paste();
-              await this.pogoService.hideKeyboard();
-              await this.pogoService.clickOkOnRenameDialog();
-              await TimeUtils.wait(600);
+      const subscription = this.calcyLogEvents
+        .subscribe(async event => {
+          if (event instanceof ScreenType) {
+            if (event.type === 'monster') {
+              lucky = event.lucky;
+            } else {
+              if (this.evalInProgress) {
+                await this.calcyIVService.analyzeScreen();
+              } else {
+                subscription.unsubscribe();
+              }
             }
-
-            await this.pogoService.nextPokemon();
-            await TimeUtils.wait(300);
           }
-          if (this.evalInProgress) {
-            await this.calcyIVService.analyzeScreen();
-          } else {
-            subscription.unsubscribe();
+
+          if (event instanceof Pokemon) {
+            const pokemon = event;
+            pokemon.lucky = lucky;
+            if (pokemon.isCorrectlyDetected) {
+              this.clipperService.get().then(name => {
+                this.zone.run(async () => {
+                  pokemon.renamed = name;
+                });
+              });
+
+              this.zone.run(async () => {
+                console.log(pokemon);
+                this.pokemons.push(pokemon);
+              });
+
+              if (pokemon.maxIv >= this.minIv) {
+                await this.adbService.tap(this.pokemonDetailScreen.renameButton.coordinates);
+                await this.adbService.paste();
+                await this.pogoService.hideKeyboard();
+                await this.pogoService.clickOkOnRenameDialog();
+                await TimeUtils.wait(600);
+              }
+
+              await this.pogoService.nextPokemon();
+              await TimeUtils.wait(300);
+            }
+            if (this.evalInProgress) {
+              await this.calcyIVService.analyzeScreen();
+            } else {
+              subscription.unsubscribe();
+            }
           }
         });
       await this.calcyIVService.analyzeScreen();

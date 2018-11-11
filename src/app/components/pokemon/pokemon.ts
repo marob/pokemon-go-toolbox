@@ -13,6 +13,7 @@ export class Pokemon {
   hp: number;
   dust: number;
   level: number;
+  lucky: boolean;
 
   fastMove: string;
   specialMove: string;

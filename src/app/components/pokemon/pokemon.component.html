@@ -1,4 +1,4 @@
-<button mat-button *ngIf="pokemon" (click)="doShow()">
+<button mat-button *ngIf="pokemon" (click)="doShow()" [ngClass]="{lucky: pokemon.lucky}">
   <!--<a class="remove" href="#" (click)="doRemove()">X</a>-->
   <div class="pc">{{pokemon.cp ? pokemon.cp : '?'}}</div>
   <div class="image">
