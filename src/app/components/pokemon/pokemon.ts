@@ -33,7 +33,7 @@ export class Pokemon {
 
   get isCorrectlyDetected() {
     return this.formId !== -1
-      && this.cp !== -1
+      && this.cp >= 10
       && this.hp !== -1
       && this.dust !== -1
       && this.level !== -1;
