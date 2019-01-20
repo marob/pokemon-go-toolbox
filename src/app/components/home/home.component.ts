@@ -23,7 +23,7 @@ class ScreenType {
 }
 
 const SCREEN_REGEXP = new RegExp('Detected (.*) screen');
-const POKEMON_INFO_REGEXP = new RegExp('Received values: Id: ([^,]*), Nr: ([^,]*), CP: ([^,]*), Max HP: ([^,]*), Dust cost: ([^,]*), Level: ([^,]*), FastMove ([^,]*), SpecialMove ([^,]*), Gender ([^,]*)');
+const RECEIVED_VALUES_REGEXP = new RegExp('Received values: (.*)');
 
 @Component({
   selector: 'app-home',
@@ -96,7 +96,7 @@ export class HomeComponent implements OnInit {
             return screenType;
           }
 
-          const regexMath = /Received values: (.*)/.exec(log);
+          const regexMath = RECEIVED_VALUES_REGEXP.exec(log);
           if (regexMath) {
             const receivedValues: any = regexMath[1].split(',').map(v => v.trim()).reduce((acc, receivedValue) => {
               let [key, value] = receivedValue.split(':').map(v => v.trim());
