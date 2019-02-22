@@ -46,7 +46,7 @@ export class PogoService {
     const screenSize = await this.adbService.screenSize();
     return await this.adbService.tap([
       Math.round(.90 * screenSize.width),
-      Math.round(.15 * screenSize.height)
+      Math.round(.20 * screenSize.height)
     ]);
   }
 
