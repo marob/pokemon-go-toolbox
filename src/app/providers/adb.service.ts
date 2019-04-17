@@ -50,7 +50,7 @@ export class AdbService {
         }
       );
     });
-  };
+  }
 
   public resume: () => void = () => undefined;
 

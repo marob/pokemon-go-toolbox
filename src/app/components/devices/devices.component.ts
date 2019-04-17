@@ -20,7 +20,7 @@ export class DevicesComponent implements OnInit {
 
   async ngOnInit() {
     await this.refreshDevices();
-    setInterval(this.refreshDevices.bind(this), 1000);
+    setInterval(this.refreshDevices.bind(this), 5000);
 
     this.devices = this.devicesService.devices;
 

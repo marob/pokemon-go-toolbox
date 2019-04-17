@@ -6,10 +6,12 @@ import {ClipperService} from '../../providers/clipper.service';
 import {CalcyIVService} from '../../providers/calcyIV.service';
 import {PogoService} from '../../providers/pogo.service';
 import PokemonDetailScreen from '../../dto/screen/pokemonDetailScreen';
-import {map} from 'rxjs/operators';
+import {map, filter} from 'rxjs/operators';
 import {Observable} from 'rxjs';
 import {DevicesService} from '../../providers/devices.service';
 import {ReferenceDataService} from '../../providers/reference-data.service';
+import { Appraisal } from '../pokemon/appraisal';
+import { rename } from 'fs';
 
 interface PokemonName {
   pid: number;
@@ -25,6 +27,10 @@ class ScreenType {
 const SCREEN_REGEXP = new RegExp('Detected (.*) screen');
 const RECEIVED_VALUES_REGEXP = new RegExp('Received values: (.*)');
 
+const APPRAISAL_OVERALL_REGEXP = new RegExp('Overall \\(Index .*, value (.*)\\).*');
+const APPRAISAL_BEST_STAT_REGEXP = new RegExp('Best stat \\(Index .*, value: (.*)\\).*');
+const APPRAISAL_STATS_REGEXP = new RegExp('Stats \\(Index .*, value (.*)\\).*');
+
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
@@ -34,11 +40,17 @@ export class HomeComponent implements OnInit {
   public pokemons: Pokemon[] = [];
   public screenshot: string;
   public evalInProgress: boolean;
+  private appraisalInProgress: boolean;
+  private endPokemonAppraisal: Function;
   public minIv = 90;
+  public appraise = true;
+  public canRename = true;
+  public rename = true;
   public selectedPokemon: Pokemon;
 
   private pokemonDetailScreen: PokemonDetailScreen;
-  private calcyLogEvents: Observable<Pokemon | ScreenType>;
+  private appraisalClickZone: [number, number];
+  private calcyLogEvents: Observable<Pokemon | ScreenType | Appraisal>;
 
   private standardPokemonNames: PokemonName[];
   private specialPokemonNames: PokemonName[];
@@ -55,6 +67,11 @@ export class HomeComponent implements OnInit {
   }
 
   async ngOnInit() {
+    this.canRename = await this.adbService.getApiLevel() >= 24;
+    if (!this.canRename) {
+      this.rename = false;
+    }
+
     const names = this.referenceDataService.getPokemonNames().filter(p => p.locale === 'fr');
     this.standardPokemonNames = names.filter(p => p.pid < 10000);
     this.specialPokemonNames = names.filter(p => p.pid >= 10000);
@@ -96,9 +113,9 @@ export class HomeComponent implements OnInit {
             return screenType;
           }
 
-          const regexMath = RECEIVED_VALUES_REGEXP.exec(log);
-          if (regexMath) {
-            const receivedValues: any = regexMath[1].split(',').map(v => v.trim()).reduce((acc, receivedValue) => {
+          const receivedValuesRegexMatch = RECEIVED_VALUES_REGEXP.exec(log);
+          if (receivedValuesRegexMatch) {
+            const receivedValues: any = receivedValuesRegexMatch[1].split(',').map(v => v.trim()).reduce((acc, receivedValue) => {
               let [key, value] = receivedValue.split(':').map(v => v.trim());
               if (!value) {
                 [key, value] = key.split(' ');
@@ -130,7 +147,29 @@ export class HomeComponent implements OnInit {
             pokemon.levelUp = receivedValues.Levelup.toLowerCase() === 'true';
             return pokemon;
           }
-        })
+
+          const appraisalOverallRegexMatch = APPRAISAL_OVERALL_REGEXP.exec(log);
+          if (appraisalOverallRegexMatch) {
+            const appraisal = new Appraisal();
+            appraisal.overall = Number.parseInt(appraisalOverallRegexMatch[1], 10);
+            return appraisal;
+          }
+
+          const appraisalBestStatRegexMatch = APPRAISAL_BEST_STAT_REGEXP.exec(log);
+          if (appraisalBestStatRegexMatch) {
+            const appraisal = new Appraisal();
+            appraisal.bestStat = Number.parseInt(appraisalBestStatRegexMatch[1], 10);
+            return appraisal;
+          }
+
+          const appraisalStatsRegexMatch = APPRAISAL_STATS_REGEXP.exec(log);
+          if (appraisalStatsRegexMatch) {
+            const appraisal = new Appraisal();
+            appraisal.stats = Number.parseInt(appraisalStatsRegexMatch[1], 10);
+            return appraisal;
+          }
+        }),
+        filter(event => event !== undefined)
       );
   }
 
@@ -159,21 +198,24 @@ export class HomeComponent implements OnInit {
 
   async startPokemonsEval() {
     this.evalInProgress = true;
+    this.appraisalInProgress = false;
     await this.initClipper();
 
     const screen = await this.pogoService.getCurrentScreen();
     if (screen instanceof PokemonDetailScreen) {
       console.log('On the right screen. Evaluation will start!');
       this.pokemonDetailScreen = screen;
+      this.appraisalClickZone = [1, this.pokemonDetailScreen.actionsButton.coordinates[1]];
 
       let lucky;
+      let currentAppraisal: Appraisal;
 
       const subscription = this.calcyLogEvents
         .subscribe(async event => {
           if (event instanceof ScreenType) {
             if (event.type === 'monster') {
               lucky = event.lucky;
-            } else {
+            } else if (!this.appraisalInProgress) {
               if (this.evalInProgress) {
                 await this.calcyIVService.analyzeScreen();
               } else {
@@ -182,10 +224,51 @@ export class HomeComponent implements OnInit {
             }
           }
 
+          if (event instanceof Appraisal) {
+            if (event.overall && !currentAppraisal) {
+              currentAppraisal = new Appraisal();
+              currentAppraisal.overall = event.overall;
+              console.log(`Appraisal (in progress): ${JSON.stringify(currentAppraisal)}`);
+              this.adbService.tap(this.appraisalClickZone);
+            }
+            if (event.bestStat >= 0 && !currentAppraisal.bestStats.includes(event.bestStat)) {
+              currentAppraisal.bestStats.push(event.bestStat);
+              console.log(`Appraisal (in progress): ${JSON.stringify(currentAppraisal)}`);
+              this.adbService.tap(this.appraisalClickZone);
+            }
+            if (event.stats) {
+              currentAppraisal.stats = event.stats;
+              console.log(`Appraisal: ${JSON.stringify(currentAppraisal)}`);
+
+              const appraisalScreen = await this.pogoService.getAppraisalScreen(this.pokemonDetailScreen.actionsButton.coordinates);
+              console.log('Save appraisal result');
+              await this.adbService.tap(appraisalScreen.saveButton.coordinates);
+
+              console.log('Clicks to dismiss appraisal end text');
+              await this.adbService.tap(this.appraisalClickZone);
+              await this.adbService.tap(this.appraisalClickZone);
+              await this.adbService.tap(this.appraisalClickZone);
+
+              console.log('Dismiss result screen after appraisal');
+              await this.adbService.tap([
+                Math.round(this.pokemonDetailScreen.width / 2),
+                Math.round(this.pokemonDetailScreen.height / 2)
+              ]);
+
+              this.endPokemonAppraisal();
+            }
+          }
+
           if (event instanceof Pokemon) {
             const pokemon = event;
             pokemon.lucky = lucky;
             if (pokemon.isCorrectlyDetected) {
+              if (this.appraise && pokemon.possibleIVs.length > 1 && pokemon.maxIv >= this.minIv) {
+                currentAppraisal = null;
+                await this.appraisePokemon();
+                pokemon.appraisal = currentAppraisal;
+              }
+
               this.clipperService.get().then(name => {
                 this.zone.run(async () => {
                   pokemon.renamed = name;
@@ -197,7 +280,7 @@ export class HomeComponent implements OnInit {
                 this.pokemons.push(pokemon);
               });
 
-              if (pokemon.maxIv >= this.minIv) {
+              if (this.rename && pokemon.maxIv >= this.minIv) {
                 await this.adbService.tap(this.pokemonDetailScreen.renameButton.coordinates);
                 await this.adbService.paste();
                 await this.pogoService.hideKeyboard();
@@ -220,6 +303,25 @@ export class HomeComponent implements OnInit {
       console.log('Not in the right screen');
       this.evalInProgress = false;
     }
+  }
+
+  private async appraisePokemon() {
+    return new Promise(async (resolve) => {
+      console.log('Enter appraisal mode');
+      this.appraisalInProgress = true;
+      console.log('Click actions button');
+      await this.adbService.tap(this.pokemonDetailScreen.actionsButton.coordinates);
+      const actionsButtonsScreen = await this.pogoService.getActionsButtonsScreen(this.pokemonDetailScreen.actionsButton.coordinates);
+      console.log('Click appraise button in actions button');
+      await this.adbService.tap(actionsButtonsScreen.appraiseButton.coordinates);
+      this.adbService.tap(this.appraisalClickZone);
+      await this.calcyIVService.analyzeScreen();
+
+      this.endPokemonAppraisal = () => {
+        this.appraisalInProgress = false;
+        resolve();
+      };
+    });
   }
 
   stopPokemonsEval() {

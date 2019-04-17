@@ -1,5 +1,26 @@
 import {Iv} from './iv';
 import {ReferenceDataService} from '../../providers/reference-data.service';
+import {Appraisal} from './appraisal';
+
+const IV_RANGES = {
+  1: {min: 37, max: 45},
+  2: {min: 30, max: 36},
+  3: {min: 23, max: 29},
+  4: {min: 0, max: 22}
+};
+
+const STAT_INDEX = {
+  0: 'atk',
+  1: 'def',
+  2: 'hp'
+};
+
+const STATS_MAPPING = {
+  1: {min: 15, max: 15},
+  2: {min: 13, max: 14},
+  3: {min: 8, max: 12},
+  4: {min: 0, max: 7}
+};
 
 export class Pokemon {
   pokedexId: number;
@@ -20,7 +41,8 @@ export class Pokemon {
   gender: number;
   catchYear: number;
   levelUp: boolean;
-  possibleIVs: Iv[];
+  private _possibleIVs: Iv[];
+  private _appraisal: Appraisal;
 
   constructor(private referenceDataService: ReferenceDataService) {
   }
@@ -57,10 +79,26 @@ export class Pokemon {
     return this.weight / (this.size * this.size);
   }
 
+  get possibleIVs(): Iv[] {
+    if (!this._possibleIVs) {
+      this._possibleIVs = this.computeIv();
+    }
+    return this._possibleIVs;
+  }
+
+  set appraisal(appraisal: Appraisal) {
+    this._possibleIVs = null;
+    this._appraisal = appraisal;
+  }
+
+  get appraisal(): Appraisal {
+    return this._appraisal;
+  }
+
   /**
    * Algorithm inspired from https://pokemongo.gamepress.gg/app/factories/calcData.factory.js
    */
-  private computeIv() {
+  private computeIv(): Iv[] {
     const minATK = 0;
     const minHP = 0;
     const minDEF = 0;
@@ -72,7 +110,7 @@ export class Pokemon {
 
     // const data = pokemonData[this.pokedexId - 1];
     const data = this.referenceDataService.getPokemonData()[this.pid];
-    this.possibleIVs = [];
+    let possibleIVs = [];
     if (data) {
       const {stamina, attack, defense} = data;
 
@@ -86,12 +124,27 @@ export class Pokemon {
               cp = cp < 10 ? 10 : cp;
               if (cp === this.cp) {
                 const possibleIV = new Iv(hp, atk, def);
-                this.possibleIVs.push(possibleIV);
+                possibleIVs.push(possibleIV);
               }
             }
           }
         }
       }
     }
+
+    if (this.appraisal) {
+      possibleIVs = possibleIVs
+        .filter(iv => !this.appraisal.overall ||
+           (iv.sum >= IV_RANGES[this.appraisal.overall].min && iv.sum <= IV_RANGES[this.appraisal.overall].max)
+        )
+        .filter(iv => !this.appraisal.bestStats.length ||
+          (this.appraisal.bestStats.map(stat => iv[STAT_INDEX[stat]]).every(val => val === iv.max))
+        )
+        .filter(iv => !this.appraisal.stats ||
+          (iv.max >= STATS_MAPPING[this.appraisal.stats].min && iv.max <= STATS_MAPPING[this.appraisal.stats].max)
+        );
+    }
+
+    return possibleIVs;
   }
 }

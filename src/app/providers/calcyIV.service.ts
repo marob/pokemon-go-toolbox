@@ -6,11 +6,17 @@ import {AdbService} from './adb.service';
 import {ClipperService} from './clipper.service';
 import * as childProcess from 'child_process';
 import {ChildProcess} from 'child_process';
+import * as fs from 'fs';
+import * as path from 'path';
 import {Observable} from 'rxjs';
 
 const node = {
-  childProcess: window.require('child_process') as typeof childProcess
+  childProcess: window.require('child_process') as typeof childProcess,
+  path: window.require('path') as typeof path,
+  fs: window.require('fs') as typeof fs
 };
+
+const USER_DATA_PATH = window.require('electron').remote.app.getPath('userData');
 
 @Injectable({
   providedIn: 'root'
@@ -28,44 +34,52 @@ export class CalcyIVService {
 
   public streamCalcyIvLogs(): Observable<String> {
     return new Observable(subscriber => {
-      const childPromise = new Promise(resolve => {
-        // this.adbService.shell(`for p in /proc/[0-9]*; do [[ $(<$p/cmdline) = ${this.APP_NAME} ]] && echo \${p##*/}; done`)
-        this.adbService.shell(`pidof -s ${this.APP_NAME}`)
-          .then((result) => {
-            const {stdout, stderr} = result;
-            if (stderr) {
-              console.error(stderr);
-            }
-            const calcyIvPid = Number.parseInt(stdout);
-            console.log(`CalcyIV pid: ${calcyIvPid}`);
-            const child = node.childProcess.spawn(process.platform === 'linux' ? './adb' : 'adb', ['logcat', '-vraw', '-T1', `--pid=${calcyIvPid}`], {
-              cwd: this.adbService.platformToolsPath,
-              detached: true,
-              stdio: [
-                0, // Use parent's stdin for child
-                'pipe', // Pipe child's stdout to parent
-                0
-              ]
-            });
-            child.unref(); // and unref() somehow disentangles the child's event loop from the parent's:
+      const childPromise = new Promise(async resolve => {
+        const logCatCmd = ['logcat', '-vraw', '-T1'];
+        const apiLevel = await this.adbService.getApiLevel();
+        if (apiLevel >= 24) {
+          // this.adbService.shell(`for p in /proc/[0-9]*; do [[ $(<$p/cmdline) = ${this.APP_NAME} ]] && echo \${p##*/}; done`)
+          const {stdout, stderr} = await this.adbService.shell(`pgrep ${this.APP_NAME}`);
+          // this.adbService.shell(`pidof -s ${this.APP_NAME}`)
+          if (stderr) {
+            console.error(stderr);
+          }
+          const calcyIvPid = Number.parseInt(stdout, 10);
+          console.log(`CalcyIV pid: ${calcyIvPid}`);
+          logCatCmd.push(`--pid=${calcyIvPid}`);
+        }
 
-            resolve(child);
+        const child = node.childProcess.spawn(process.platform === 'linux' ? './adb' : 'adb', logCatCmd, {
+          cwd: this.adbService.platformToolsPath,
+          detached: true,
+          stdio: [
+            0, // Use parent's stdin for child
+            'pipe', // Pipe child's stdout to parent
+            0
+          ]
+        });
+        child.unref(); // and unref() somehow disentangles the child's event loop from the parent's:
 
-            child.stdout.on('data', (data) => {
-              data.toString()
-                .split('\n')
-                .forEach((line) => {
-                  subscriber.next(line);
-                  // this.logsSubject.next(line);
-                });
+        resolve(child);
+
+        if (process.env.LOG_CALCY === 'true') {
+          child.stdout.pipe(node.fs.createWriteStream(node.path.join(USER_DATA_PATH, 'calcy.log'), {encoding: 'utf8', flags: 'a'}));
+        }
+
+        child.stdout.on('data', (data) => {
+          data.toString()
+            .split('\n')
+            .forEach((line) => {
+              subscriber.next(line);
+              // this.logsSubject.next(line);
             });
-            child.stdout.on('close', (data) => {
-              console.log('close');
-            });
-            child.stdout.on('end', (data) => {
-              console.log('end');
-            });
-          });
+        });
+        child.stdout.on('close', (data) => {
+          console.log('close');
+        });
+        child.stdout.on('end', (data) => {
+          console.log('end');
+        });
       });
 
       return () => {
@@ -221,10 +235,10 @@ export class CalcyIVService {
         if (i % exprToMatch.length === 2) {
           const match = /mFrame=\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]/.exec(line);
           if (match) {
-            o.left = Number.parseInt(match[1]);
-            o.top = Number.parseInt(match[2]);
-            o.right = Number.parseInt(match[3]);
-            o.bottom = Number.parseInt(match[4]);
+            o.left = Number.parseInt(match[1], 10);
+            o.top = Number.parseInt(match[2], 10);
+            o.right = Number.parseInt(match[3], 10);
+            o.bottom = Number.parseInt(match[4], 10);
           } else {
             console.error('Couldn\'t find mFrame:', line);
           }

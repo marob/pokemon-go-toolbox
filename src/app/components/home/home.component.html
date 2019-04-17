@@ -16,10 +16,18 @@
   <mat-form-field>
     <mat-label>Min IV</mat-label>
     <input matInput
-           [(ngModel)]="minIv"
-           type="number"
+            [(ngModel)]="minIv"
+            type="number"
     />
   </mat-form-field>
+
+  <mat-checkbox [(ngModel)]="appraise">
+    Appraise
+  </mat-checkbox>
+
+  <mat-checkbox [(ngModel)]="rename" [disabled]="!canRename">
+    Rename
+  </mat-checkbox>
 
   <!--<button mat-raised-button (click)="takeScreenshot()">Take screenshot</button>-->
 
