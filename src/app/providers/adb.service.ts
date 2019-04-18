@@ -191,9 +191,13 @@ export class AdbService {
   public async shell(command: string): Promise<{ stdout: string, stderr: string }> {
     const start = Date.now();
     const shellCommand = `adb shell "${command}"`;
-    const result = await this.exec$(shellCommand);
-    console.log(`ADB: (${Date.now() - start}) ${shellCommand}`);
-    return result;
+    try  {
+      const result = await this.exec$(shellCommand);
+      console.log(`ADB: (${Date.now() - start}) ${shellCommand}`);
+      return result;
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   public async getApiLevel(): Promise<number> {

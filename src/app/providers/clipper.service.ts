@@ -59,7 +59,8 @@ export class ClipperService {
 
   public async get(): Promise<string> {
     const {stdout} = await this.adbService.shell('am broadcast -a clipper.get');
-    return /data="(.*)"/.exec(stdout)[1];
+    const array = /data="(.*)"/.exec(stdout);
+    return array ? array[1] : null;
   }
 
   public async set(value: string) {
