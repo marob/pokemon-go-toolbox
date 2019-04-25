@@ -151,7 +151,7 @@ export class AdbService {
       .map((line) => /([0-9]+)x([0-9]+)/
         .exec(line)
         .slice(1, 3)
-        .map((x) => Number.parseInt(x)) as [number, number],
+        .map((x) => Number.parseInt(x, 10)) as [number, number],
       )
       .reduce((smallest, current) => {
         return (!smallest || (smallest[0] > current[0] || smallest[1] > current[1]))
@@ -201,7 +201,7 @@ export class AdbService {
 
   public async getApiLevel(): Promise<number> {
     const {stdout} = await this.shell('getprop ro.build.version.sdk');
-    return Number.parseInt(stdout.trim());
+    return Number.parseInt(stdout.trim(), 10);
   }
 
   public async startApp(appName: string) {
