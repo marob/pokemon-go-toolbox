@@ -226,7 +226,7 @@ export class AdbService {
   }
 
   public async appIsInstalled(packageName: string): Promise<boolean> {
-    const {stdout} = await this.shell(`cmd package list packages ${packageName}`);
+    const {stdout} = await this.shell(`pm list packages ${packageName}`);
     return stdout.includes(packageName);
   }
 
