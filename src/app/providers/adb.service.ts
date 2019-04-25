@@ -7,8 +7,7 @@ import {SpawnSyncOptions, SpawnSyncReturns} from 'child_process';
 import * as fs from 'fs';
 import * as https from 'https';
 import * as unzip from 'unzip-stream/unzip';
-
-const Jimp = window.require('jimp');
+import * as Jimp from 'jimp';
 
 const node = {
   childProcess: window.require('child_process') as typeof childProcess,
@@ -115,7 +114,7 @@ export class AdbService {
   }
 
   public async rawScreenshot(): Promise<Buffer> {
-    const spawnSync: (command, args?, options?) => SpawnSyncReturns<Buffer> =
+    const spawnSync: (command, args?, options?) => SpawnSyncReturns<Uint8Array> =
       (command, args?, options?) => node.childProcess.spawnSync(
         process.platform === 'linux' ? `./${command}` : command,
         args,
@@ -124,13 +123,13 @@ export class AdbService {
     const {status, error, stdout, stderr} = spawnSync('adb', ['exec-out', 'screencap', '-p']);
 
     if (status === 0) {
-      return stdout;
+      return stdout.buffer as Buffer;
     } else {
       throw error;
     }
   }
 
-  public async screenshot(): Promise<Jimp.Jimp> {
+  public async screenshot(): Promise<Jimp> {
     const jimp = await Jimp.read(await this.rawScreenshot());
     if (process.env.LOG_SCREENSHOT === 'true') {
       const screenshotPath = `log/${Date.now()}.png`;

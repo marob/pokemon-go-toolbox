@@ -12,6 +12,7 @@ import { AdbService } from './adb.service';
 import ActionsButtonsScreen from '../dto/screen/actionsScreen';
 import AppraisalScreen from '../dto/screen/appraisalScreen';
 import TimeUtils from '../utils/timeUtils';
+import * as Jimp from 'jimp';
 
 @Injectable({
   providedIn: 'root'
@@ -57,7 +58,7 @@ export class PogoService {
     ]);
   }
 
-  private getHomeScreen(image: Jimp.Jimp): HomeScreen {
+  private getHomeScreen(image: Jimp): HomeScreen {
     const { width, height } = image.bitmap;
 
     const grey = 0xb9b9b9ff;
@@ -113,7 +114,7 @@ export class PogoService {
     return null;
   }
 
-  private getNavigationButtonsScreen(image: Jimp.Jimp): NavigationScreen {
+  private getNavigationButtonsScreen(image: Jimp): NavigationScreen {
     const { width, height } = image.bitmap;
 
     const buttonColor = {
@@ -273,7 +274,7 @@ export class PogoService {
     return this.appraisalScreen;
   }
 
-  private getPokemonListScreen(image: Jimp.Jimp): PokemonListScreen {
+  private getPokemonListScreen(image: Jimp): PokemonListScreen {
     const searchButtonCoords = ImageUtils.findContinuousPixelsOfColorOnLine(
       image,
       {
@@ -303,7 +304,7 @@ export class PogoService {
     return null;
   }
 
-  private getPokemonDetailScreen(image: Jimp.Jimp): PokemonDetailScreen {
+  private getPokemonDetailScreen(image: Jimp): PokemonDetailScreen {
     const renameButtonCoords = ImageUtils.findContinuousPixelsOfColorOnLine(
       image,
       0xd9d9d9ff,
