@@ -175,6 +175,7 @@ export class HomeComponent implements OnInit {
 
   private findPokemon(pokedexId: number, pokemonName: string) {
     const pokemonForm = pokemonName
+      .replace(/couvert/i, '') // For Ceriflor
       .replace(/^[^ ]+/, '')
       .replace(/normale/i, '')
       .replace(/alternative/i, '') // For Giratina
