@@ -32,7 +32,7 @@ export class CalcyIVService {
     // this.streamCalcyIvLogs();
   }
 
-  public streamCalcyIvLogs(): Observable<String> {
+  public streamCalcyIvLogs(): Observable<string> {
     return new Observable(subscriber => {
       const childPromise = new Promise(async resolve => {
         const logCatCmd = ['logcat', '-vraw', '-T1'];

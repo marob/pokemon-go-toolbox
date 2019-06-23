@@ -64,8 +64,8 @@ export class ReferenceDataService {
     return Promise.all(promises);
   }
 
-  private updatePokemonData(): PromiseLike<String> | String {
-    return new Promise<String>((resolve, reject) => {
+  private updatePokemonData(): PromiseLike<string> | string {
+    return new Promise<string>((resolve, reject) => {
       node.https.get('https://pokeassistant.com/main/ivcalculator', response => {
         if (response.statusCode === 200) {
           let body = '';

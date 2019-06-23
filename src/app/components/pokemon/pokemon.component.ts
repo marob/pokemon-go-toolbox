@@ -14,13 +14,13 @@ export class PokemonComponent {
   remove = new EventEmitter();
 
   @Output()
-  show = new EventEmitter();
+  selected = new EventEmitter();
 
   doRemove() {
     this.remove.next();
   }
 
-  doShow() {
-    this.show.next();
+  select() {
+    this.selected.next();
   }
 }

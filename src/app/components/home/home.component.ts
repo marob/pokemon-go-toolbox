@@ -41,7 +41,7 @@ export class HomeComponent implements OnInit {
   public screenshot: string;
   public evalInProgress: boolean;
   private appraisalInProgress: boolean;
-  private endPokemonAppraisal: Function;
+  private endPokemonAppraisal: () => void;
   public minIv = 90;
   public appraise = true;
   public canRename = true;

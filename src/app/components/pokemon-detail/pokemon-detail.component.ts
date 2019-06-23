@@ -10,7 +10,7 @@ import {MatSort, MatTableDataSource} from '@angular/material';
 export class PokemonDetailComponent implements OnInit {
   public _pokemon: Pokemon;
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, { static: false }) sort: MatSort;
 
   @Input()
   set pokemon(p: Pokemon) {

@@ -38,7 +38,7 @@
     *ngFor="let pokemon of pokemons ; let i = index"
     [pokemon]="pokemon"
     (remove)="pokemons.splice(i, 1)"
-    (show)="selectedPokemon=pokemon"
+    (selected)="selectedPokemon=pokemon"
     [ngClass]="{'badPokemon': pokemon.maxIv < minIv, 'goodPokemon': pokemon.maxIv >= minIv}"
   ></app-pokemon>
 </div>

@@ -8,8 +8,7 @@ import {AppConfig} from '../environments/environment';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  constructor(private translate: TranslateService) {
-
+  constructor(translate: TranslateService) {
     translate.setDefaultLang('en');
     console.log('AppConfig', AppConfig);
 
