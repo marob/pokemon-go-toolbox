@@ -178,7 +178,7 @@ export class HomeComponent implements OnInit {
       .replace(/^[^ ]+/, '')
       .replace(/normale/i, '')
       .replace(/alternative/i, '') // For Giratina
-      .replace(/couvert/i, '') // For Ceriflor
+      .replace(/couvert|Ensoleillé/i, '') // For Ceriflor
       .replace(/orient/i, '') // For Sancoki
       .trim();
 
