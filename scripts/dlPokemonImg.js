@@ -3,6 +3,7 @@ const https = require('https');
 
 const BASE_URL = 'https://pokemon.gameinfo.io/images/pokemon-go';
 const toDir = 'src/assets/img/pokemon';
+const MAX_POKEDEX_ID = 488;
 
 const FORMS = {
   // // Zarbi
@@ -10,7 +11,7 @@ const FORMS = {
   // Morphéo
   351: { urlMin: 11, fsMin: 29, nb: 4 },
   // Deoxys
-  386: { urlMin: 11, fsIds: [386, 10001, 10002, 10003], nb: 4 }
+  386: { urlMin: 11, fsIds: [386, 10001, 10002, 10003], nb: 4 },
 };
 
 const ALOLA = [
@@ -161,7 +162,7 @@ const pad = function(value, length) {
   return (pad + value).substring(('' + value).length);
 };
 
-for (let i = 1; i <= 488; i++) {
+for (let i = 1; i <= MAX_POKEDEX_ID; i++) {
   const id = pad(i, 3);
 
   let img = id;
