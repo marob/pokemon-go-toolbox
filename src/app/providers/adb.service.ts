@@ -187,6 +187,11 @@ export class AdbService {
     return await this.shell(`input tap ${x} ${y}`);
   }
 
+  public async swipe([x1, y1]: [number, number], [x2, y2]: [number, number], duration = 250) {
+    await this.waitIfPosedPromise;
+    return await this.shell(`input swipe ${x1} ${y1} ${x2} ${y2} ${duration}`);
+  }
+
   public async shell(command: string): Promise<{ stdout: string, stderr: string }> {
     const start = Date.now();
     const shellCommand = `adb shell "${command}"`;

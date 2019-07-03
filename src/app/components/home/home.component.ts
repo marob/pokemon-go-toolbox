@@ -20,7 +20,7 @@ interface PokemonName {
 }
 
 class ScreenType {
-  type: 'monster' | 'appraisal';
+  type: 'monster' | 'appraisal' | 'scrolled monster';
   lucky?: boolean;
 }
 
@@ -40,12 +40,14 @@ export class HomeComponent implements OnInit {
   public pokemons: Pokemon[] = [];
   public screenshot: string;
   public evalInProgress: boolean;
+  private moveScanInProgress = false;
   private appraisalInProgress: boolean;
   private endPokemonAppraisal: () => void;
   public minIv = 90;
   public appraise = true;
   public canRename = true;
   public rename = true;
+  public scanMoves = true;
   public selectedPokemon: Pokemon;
 
   private pokemonDetailScreen: PokemonDetailScreen;
@@ -100,6 +102,7 @@ export class HomeComponent implements OnInit {
           const screenRegexpMatch = SCREEN_REGEXP.exec(log);
           if (screenRegexpMatch) {
             const [, screen] = screenRegexpMatch;
+            console.log(`Found screen "${screen}"`);
             const screenType = new ScreenType();
             if (screen === 'lucky monster') {
               screenType.type = 'monster';
@@ -109,6 +112,10 @@ export class HomeComponent implements OnInit {
               screenType.lucky = false;
             } else if (screen === 'appraisal') {
               screenType.type = 'appraisal';
+            } else if (screen === 'scrolled monster') {
+              screenType.type = 'scrolled monster';
+            } else {
+              console.error(`Unknown screen type: ${screen}`);
             }
             return screenType;
           }
@@ -225,7 +232,9 @@ export class HomeComponent implements OnInit {
           if (event instanceof ScreenType) {
             if (event.type === 'monster') {
               lucky = event.lucky;
-            } else if (!this.appraisalInProgress) {
+            }
+            const falseAppraisalScreen = event.type === 'appraisal' && !this.appraisalInProgress;
+            if (falseAppraisalScreen) {
               if (this.evalInProgress) {
                 await this.calcyIVService.analyzeScreen();
               } else {
@@ -273,24 +282,44 @@ export class HomeComponent implements OnInit {
             const pokemon = event;
             pokemon.lucky = lucky;
             if (pokemon.isCorrectlyDetected) {
-              if (this.appraise && pokemon.possibleIVs.length > 1 && pokemon.maxIv >= this.minIv) {
-                currentAppraisal = null;
-                await this.appraisePokemon();
-                pokemon.appraisal = currentAppraisal;
-              }
-
-              this.clipperService.get().then(name => {
-                this.zone.run(async () => {
-                  pokemon.renamed = name;
-                });
-              });
-
               this.zone.run(async () => {
                 console.log(pokemon);
                 this.pokemons.push(pokemon);
               });
 
+              if (this.appraise && pokemon.possibleIVs.length > 1 && pokemon.maxIv >= this.minIv) {
+                currentAppraisal = null;
+                await this.appraisePokemon();
+                this.zone.run(async () => {
+                  pokemon.appraisal = currentAppraisal;
+                });
+              }
+
+              this.clipperService.get().then(name => {
+                this.zone.run(async () => {
+                  this.zone.run(async () => {
+                    pokemon.renamed = name;
+                  });
+                });
+              });
+
               if (this.rename && pokemon.maxIv >= this.minIv) {
+                if (this.scanMoves) {
+                  this.moveScanInProgress = true;
+                  const middleHeight = Math.round(this.pokemonDetailScreen.height / 2);
+                  const scrollHeight = Math.round(this.pokemonDetailScreen.height / 8);
+                  await this.adbService.swipe(
+                    [1, middleHeight + scrollHeight],
+                    [1, middleHeight]
+                  );
+                  await this.calcyIVService.analyzeScreen();
+                  await this.adbService.swipe(
+                    [1, middleHeight],
+                    [1, middleHeight + 2 * scrollHeight]
+                  );
+                  this.moveScanInProgress = false;
+                }
+
                 await this.adbService.tap(this.pokemonDetailScreen.renameButton.coordinates);
                 await this.adbService.paste();
                 await this.pogoService.hideKeyboard();
@@ -301,7 +330,7 @@ export class HomeComponent implements OnInit {
               await this.pogoService.nextPokemon();
               await TimeUtils.wait(300);
             }
-            if (this.evalInProgress) {
+            if (this.evalInProgress && !this.moveScanInProgress) {
               await this.calcyIVService.analyzeScreen();
             } else {
               subscription.unsubscribe();
