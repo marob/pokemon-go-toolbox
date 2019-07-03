@@ -4,6 +4,7 @@
   <div class="image">
     <span></span>
     <img *ngIf="pokemon.image" [src]="pokemon.image" alt="">
+    <span *ngIf="pokemon.favorite" class="favorite"></span>
   </div>
   <div class="name">{{pokemon.renamed?pokemon.renamed:pokemon.name}}</div>
   <div>

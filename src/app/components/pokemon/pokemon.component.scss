@@ -68,3 +68,10 @@ button {
   background: url("../../../assets/img/lucky.svg") no-repeat 50% 0;
   background-size: 50%;
 }
+
+.favorite::after {
+  position: absolute;
+  content: "★";
+  color: #ff8600;
+  font-size: 1.3em;
+}

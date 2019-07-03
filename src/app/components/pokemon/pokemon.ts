@@ -38,8 +38,10 @@ export class Pokemon {
 
   fastMove: string;
   specialMove: string;
+  specialMove2: string;
   gender: number;
   catchYear: number;
+  favorite: boolean;
   levelUp: boolean;
   private _possibleIVs: Iv[];
   private _appraisal: Appraisal;

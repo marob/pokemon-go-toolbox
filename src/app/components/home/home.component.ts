@@ -142,8 +142,10 @@ export class HomeComponent implements OnInit {
             pokemon.level = Number.parseInt(receivedValues.Level, 10);
             pokemon.fastMove = receivedValues.FastMove;
             pokemon.specialMove = receivedValues.SpecialMove;
+            pokemon.specialMove2 = receivedValues.SpecialMove2;
             pokemon.gender = Number.parseInt(receivedValues.Gender, 10);
-            pokemon.catchYear = Number.parseInt(receivedValues.catchYear, 10);
+            pokemon.catchYear = Number.parseInt(receivedValues.CatchYear, 10);
+            pokemon.favorite = Number.parseInt(receivedValues.Favorite, 10) === 1;
             pokemon.levelUp = receivedValues.Levelup.toLowerCase() === 'true';
             return pokemon;
           }
@@ -180,14 +182,20 @@ export class HomeComponent implements OnInit {
       .replace(/alternative/i, '') // For Giratina
       .replace(/couvert|Ensoleillé/i, '') // For Ceriflor
       .replace(/orient/i, '') // For Sancoki
+      .replace(/déchet/i, '') // For Cheniti
       .trim();
 
+    let foundPokemon;
+    const pokemonsFromPokedexId = this.pokedex[pokedexId];
     if (pokemonForm) {
-      return this.pokedex[pokedexId]
-        .find(p => new RegExp(pokemonForm, 'i').test(p.name));
+      foundPokemon = pokemonsFromPokedexId.find(p => new RegExp(pokemonForm, 'i').test(p.name));
     } else {
-      return this.pokedex[pokedexId][0];
+      foundPokemon = pokemonsFromPokedexId[0];
     }
+    if (!foundPokemon) {
+      console.error('Pokemon not found:', pokedexId, pokemonName, pokemonsFromPokedexId ? pokemonsFromPokedexId : this.pokedex);
+    }
+    return foundPokemon;
   }
 
   private async initClipper() {
