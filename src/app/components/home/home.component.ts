@@ -1,17 +1,16 @@
-import {Component, NgZone, OnInit} from '@angular/core';
-import {Pokemon} from '../pokemon/pokemon';
+import { Component, NgZone, OnInit } from '@angular/core';
+import { Pokemon } from '../pokemon/pokemon';
 import TimeUtils from '../../utils/timeUtils';
-import {AdbService} from '../../providers/adb.service';
-import {ClipperService} from '../../providers/clipper.service';
-import {CalcyIVService} from '../../providers/calcyIV.service';
-import {PogoService} from '../../providers/pogo.service';
+import { AdbService } from '../../providers/adb.service';
+import { ClipperService } from '../../providers/clipper.service';
+import { CalcyIVService } from '../../providers/calcyIV.service';
+import { PogoService } from '../../providers/pogo.service';
 import PokemonDetailScreen from '../../dto/screen/pokemonDetailScreen';
-import {map, filter} from 'rxjs/operators';
-import {Observable} from 'rxjs';
-import {DevicesService} from '../../providers/devices.service';
-import {ReferenceDataService} from '../../providers/reference-data.service';
+import { map, filter } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { DevicesService } from '../../providers/devices.service';
+import { ReferenceDataService } from '../../providers/reference-data.service';
 import { Appraisal } from '../pokemon/appraisal';
-import { rename } from 'fs';
 
 interface PokemonName {
   pid: number;
@@ -59,13 +58,14 @@ export class HomeComponent implements OnInit {
   private alola: { pid: number; name: string; locale: string; originalName: string; originalId: number }[];
   private pokedex: { [id: number]: PokemonName[] };
 
-  constructor(private devicesService: DevicesService,
-              private adbService: AdbService,
-              private calcyIVService: CalcyIVService,
-              private clipperService: ClipperService,
-              private pogoService: PogoService,
-              private referenceDataService: ReferenceDataService,
-              private zone: NgZone) {
+  constructor(
+    private devicesService: DevicesService,
+    private adbService: AdbService,
+    private calcyIVService: CalcyIVService,
+    private clipperService: ClipperService,
+    private pogoService: PogoService,
+    private referenceDataService: ReferenceDataService,
+    private zone: NgZone) {
   }
 
   async ngOnInit() {
@@ -90,8 +90,8 @@ export class HomeComponent implements OnInit {
 
     this.alola = this.specialPokemonNames
       .filter(p => /alola/i.test(p.name))
-      .map(p => ({...p, originalName: p.name.split(' ')[0]}))
-      .map(p => ({...p, originalId: this.standardPokemonNames.find(sp => sp.name === p.originalName).pid}));
+      .map(p => ({ ...p, originalName: p.name.split(' ')[0] }))
+      .map(p => ({ ...p, originalId: this.standardPokemonNames.find(sp => sp.name === p.originalName).pid }));
 
     this.devicesService.devices
       .forEach(device => device.connected$.subscribe(status => console.log(`${device.id}: ${status}`)));
@@ -183,26 +183,22 @@ export class HomeComponent implements OnInit {
   }
 
   private findPokemon(pokedexId: number, pokemonName: string) {
-    const pokemonForm = pokemonName
-      .replace(/^[^ ]+/, '')
-      .replace(/normale/i, '')
-      .replace(/alternative/i, '') // For Giratina
-      .replace(/couvert|Ensoleillé/i, '') // For Ceriflor
-      .replace(/orient/i, '') // For Sancoki
-      .replace(/déchet/i, '') // For Cheniti
-      .trim();
-
-    let foundPokemon;
     const pokemonsFromPokedexId = this.pokedex[pokedexId];
-    if (pokemonForm) {
-      foundPokemon = pokemonsFromPokedexId.find(p => new RegExp(pokemonForm, 'i').test(p.name));
+
+    if (pokemonsFromPokedexId.length === 0) {
+      console.error('Pokemon not found:', pokedexId, this.pokedex);
+    } else if (pokemonsFromPokedexId.length === 1) {
+      return pokemonsFromPokedexId[0];
     } else {
-      foundPokemon = pokemonsFromPokedexId[0];
+      const pokemonForm = pokemonName.split(' ').slice(1).join(' ');
+      let foundPokemon = pokemonsFromPokedexId.find(p => new RegExp(pokemonForm, 'i').test(p.name));
+      if (!foundPokemon) {
+        console.warn('Pokemon not found:', pokedexId, pokemonName, pokemonsFromPokedexId);
+        foundPokemon = pokemonsFromPokedexId[0];
+        console.warn('Defaulting to', foundPokemon);
+      }
+      return foundPokemon;
     }
-    if (!foundPokemon) {
-      console.error('Pokemon not found:', pokedexId, pokemonName, pokemonsFromPokedexId ? pokemonsFromPokedexId : this.pokedex);
-    }
-    return foundPokemon;
   }
 
   private async initClipper() {

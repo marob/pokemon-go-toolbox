@@ -9,9 +9,11 @@ const FORMS = {
   // // Zarbi
   // 201: {urlMin: 11, fsMin: 1, nb: 26},
   // Morphéo
-  351: { urlMin: 11, fsMin: 29, nb: 4 },
+  351: { urlMin: 11, fsIds: [351, 10013, 10014, 10015], nb: 4 },
   // Deoxys
   386: { urlMin: 11, fsIds: [386, 10001, 10002, 10003], nb: 4 },
+  // Giratina
+  487: { urlMin: 11, fsIds: [487, 10007], nb: 2 },
 };
 
 const ALOLA = [
